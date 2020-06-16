@@ -1,17 +1,20 @@
+/*
+ * Introduction:
+ *
+ * Chebyshev polynomial (of first kind) are orthogonal polynomials. Chebyshev polynomial
+ * of degree N is defined recursively:
+ * T_0(x) = 1
+ * T_1(x) = x
+ * T_{n+1}(x) = 2xT_n(x) - T_{n-1}(x)
+ *
+ * Let a_i be i-th coefficient of T_{n-1}(x),
+ *     b_i be i-th coefficient of T_n(x),
+ *     c_i be i-th coefficient of T_{n+1}(x)
+ * Then c_i = 2*b_i - a_i
+ *
+ */
 #include <iostream>
 #include <type_traits>
-
-template <int N, int P>
-struct Power
-{
-    enum { value = N * Power<N, P - 1>::value };
-};
-
-template <int N>
-struct Power<N, 0>
-{
-    enum { value = 1 };
-};
 
 template <size_t Deg, size_t N>
 struct ChebyshevCoefficient;
@@ -19,35 +22,35 @@ struct ChebyshevCoefficient;
 template <>
 struct ChebyshevCoefficient<0, 0>
 {
-    static constexpr int coef = 1 ;
+    static constexpr int value = 1 ;
 };
 
 template <size_t N>
 struct ChebyshevCoefficient<0, N>
 {
-    static constexpr int coef = 0;
+    static constexpr int value = 0;
 };
 
 template <>
 struct ChebyshevCoefficient<1, 1>
 {
-    static constexpr int coef = 1;
+    static constexpr int value = 1;
 };
 
 template <size_t N>
 struct ChebyshevCoefficient<1, N>
-{ static constexpr int coef = 0; };
+{ static constexpr int value = 0; };
 
 template <size_t Deg>
 struct ChebyshevCoefficient<Deg, Deg>
 {
-    static constexpr int coef = 2 * ChebyshevCoefficient<Deg - 1, Deg - 1>::coef;
+    static constexpr int value = 2 * ChebyshevCoefficient<Deg - 1, Deg - 1>::value;
 };
 
 template <size_t Deg, size_t N>
 struct ChebyshevCoefficient
 {
-    static constexpr int coef = N > Deg ? 0 : 2 * ChebyshevCoefficient<Deg - 1, N - 1>::coef - ChebyshevCoefficient<Deg - 2, N>::coef;
+    static constexpr int value = N > Deg ? 0 : 2 * ChebyshevCoefficient<Deg - 1, N - 1>::value - ChebyshevCoefficient<Deg - 2, N>::value;
 };
 
 
@@ -85,31 +88,21 @@ struct ChebyshevPolynomial
 {
     template <size_t N>
     struct CoefFunc {
-        static constexpr int value = ChebyshevCoefficient<Deg, N>::coef;
+        static constexpr int value = ChebyshevCoefficient<Deg, N>::value;
     };
-    static constexpr auto coefs = FillArray<Deg + 1, CoefFunc>::array::data;
+    static constexpr auto coef = FillArray<Deg + 1, CoefFunc>::array::data;
 };
 
 int main()
 {
-    /*const int *compilerFilledArray = Table<4>::array;
-    for (int i=0; i < 5; ++i)
-        std::cout << compilerFilledArray[i] << ' ';
-    std::cout << std::endl;*/
-
-    static_assert(ChebyshevCoefficient<3, 3>::coef == 4);
-    static_assert(ChebyshevCoefficient<3, 1>::coef == -3);
-
-    std::cout << ChebyshevCoefficient<3, 3>::coef << "x^3 + ";
-    std::cout << ChebyshevCoefficient<3, 2>::coef << "x^2 + ";
-    std::cout << ChebyshevCoefficient<3, 1>::coef << "x + ";
-    std::cout << ChebyshevCoefficient<3, 0>::coef << std::endl;
-
-    static_assert(Power<3, 4>::value == 81);
+    static_assert(ChebyshevCoefficient<3, 3>::value == 4);
+    static_assert(ChebyshevCoefficient<3, 2>::value == 0);
+    static_assert(ChebyshevCoefficient<3, 1>::value == -3);
+    static_assert(ChebyshevCoefficient<3, 0>::value == 0);
 
     using P = ChebyshevPolynomial<3>;
     for(size_t i = 0; i < 4; ++i)
-        std::cout << P::coefs[i] << ' ';
+        std::cout << P::coef[i] << ' ';
     std::cout << std::endl;
 
     return 0;
